@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Personel Takip Sistemi</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #1a1a2e; color: #fff; }
+        
+        .giris-ekrani {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            gap: 20px;
+        }
+        h1 { color: #00d4ff; font-size: 28px; }
+        
+        input {
+            padding: 12px;
+            border-radius: 8px;
+            border: 2px solid #00d4ff;
+            background: #16213e;
+            color: white;
+            font-size: 16px;
+            width: 300px;
+            text-align: center;
+        }
+        .btn-okut {
+            background: #00d4ff;
+            color: #1a1a2e;
+            border: none;
+            padding: 14px;
+            width: 300px;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .btn-okut:hover { background: #00b8d9; }
+
+        .mesaj {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            display: none;
+            text-align: center;
+            width: 300px;
+        }
+        .mesaj.basari { background: #003300; border: 2px solid #00b300; color: #00ff00; }
+        .mesaj.hata { background: #330000; border: 2px solid #cc0000; color: #ff4444; }
+
+        .gecisler {
+            width: 500px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .gecisler h3 { color: #aaa; margin-bottom: 10px; font-size: 14px; }
+        .gecis-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 6px;
+        }
+        .gecis-giris { background: #003300; border-left: 4px solid #00b300; }
+        .gecis-cikis { background: #330000; border-left: 4px solid #cc0000; }
+        
+        .btn-patron {
+            background: transparent;
+            color: #444;
+            border: 1px solid #333;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+        .btn-patron:hover { color: #888; }
+    </style>
+</head>
+<body>
+
+<div class="giris-ekrani">
+    <h1>🏢 Personel Takip Sistemi</h1>
+    <input type="text" id="sicilNo" placeholder="Sicil No giriniz..." />
+    <div style="display:flex; gap:10px; width:300px;">
+    <button class="btn-okut" style="background:#00b300;" onclick="kartOkut('A')">✅ A Kapısı</button>
+    <button class="btn-okut" style="background:#cc0000;" onclick="kartOkut('B')">🚪 B Kapısı</button>
+    </div>
+    <div id="mesaj" class="mesaj"></div>
+    
+    <div class="gecisler">
+        <h3>SON GEÇİŞLER</h3>
+        <div id="gecisListesi"></div>
+    </div>
+
+    <button class="btn-patron" onclick="patronGiris()">Yönetici</button>
+</div>
+
+<script>
+    const API = 'http://localhost:8080';
+
+    async function kartOkut(kapi) {
+    const sicilNo = document.getElementById('sicilNo').value.trim();
+    if (!sicilNo) { mesajGoster('Sicil no giriniz!', false); return; }
+
+    try {
+        const res = await fetch(`${API}/kart-okut`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sicilNo, kapi })
+        });
+            const data = await res.json();
+            if (res.ok) {
+                mesajGoster(`${data.mesaj} — ${data.ad}`, true);
+                yukleGecisler();
+            } else {
+                mesajGoster(typeof data === 'string' ? data : 'Personel bulunamadı!', false);
+            }
+        } catch (e) {
+            mesajGoster('Bağlantı hatası!', false);
+        }
+        document.getElementById('sicilNo').value = '';
+    }
+
+    function mesajGoster(metin, basari) {
+        const el = document.getElementById('mesaj');
+        el.textContent = basari ? '✅ ' + metin : '❌ ' + metin;
+        el.className = `mesaj ${basari ? 'basari' : 'hata'}`;
+        el.style.display = 'block';
+        setTimeout(() => el.style.display = 'none', 3000);
+    }
+
+    async function yukleGecisler() {
+        try {
+            const res = await fetch(`${API}/gecisler`);
+            const data = await res.json();
+            const el = document.getElementById('gecisListesi');
+            if (data.length === 0) {
+                el.innerHTML = '<div style="color:#555; text-align:center; padding:20px">Henüz geçiş yok</div>';
+                return;
+            }
+            el.innerHTML = data.slice(0, 10).map(g => `
+                <div class="gecis-item ${g.tip === 'Giriş' ? 'gecis-giris' : 'gecis-cikis'}">
+                    <span>${g.tip === 'Giriş' ? '✅' : '🚪'} ${g.personel.ad}</span>
+                    <span style="color:#aaa; font-size:13px">${new Date(g.zaman).toLocaleTimeString('tr-TR')}</span>
+                </div>`).join('');
+        } catch(e) {}
+    }
+
+    function patronGiris() {
+        const sifre = prompt('Yönetici şifresi:');
+        if (sifre === 'admin123') {
+            window.location.href = '/patron.html';
+        } else if (sifre !== null) {
+            alert('Hatalı şifre!');
+        }
+    }
+
+    document.getElementById('sicilNo').addEventListener('keypress', e => {
+        if (e.key === 'Enter') kartOkut();
+    });
+
+    yukleGecisler();
+    setInterval(yukleGecisler, 5000);
+</script>
+</body>
+</html>

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Yönetici Paneli</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #1a1a2e; color: #fff; padding: 20px; }
+        h1 { color: #00d4ff; text-align: center; margin-bottom: 20px; }
+        .sekmeler { display: flex; gap: 10px; margin-bottom: 20px; }
+        .sekme { padding: 10px 20px; border-radius: 8px; cursor: pointer; border: 1px solid #333; background: #16213e; color: #aaa; }
+        .sekme.aktif { background: #00d4ff; color: #1a1a2e; font-weight: bold; }
+        .sekme-cikis { margin-left: auto; background: transparent; color: #666; }
+        .istatistik { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px; }
+        .istat-kutu { background: #16213e; padding: 20px; border-radius: 10px; text-align: center; border: 1px solid #0f3460; }
+        .istat-sayi { font-size: 36px; font-weight: bold; color: #00d4ff; }
+        .istat-label { color: #aaa; font-size: 13px; margin-top: 5px; }
+        .panel { background: #16213e; border-radius: 10px; padding: 20px; }
+        .satir { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; border-radius: 8px; margin-bottom: 8px; background: #0f3460; }
+        .badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+        .badge-icerde { background: #003300; color: #00ff00; }
+        .badge-gec { background: #330000; color: #ff4444; }
+        .badge-normal { background: #003366; color: #4499ff; }
+        .badge-gelmedi { background: #222; color: #666; }
+        .form-alani { display: flex; flex-direction: column; gap: 10px; max-width: 400px; }
+        .form-alani input { padding: 10px; border-radius: 5px; border: 1px solid #333; background: #0f3460; color: white; font-size: 15px; }
+        .btn-ekle { padding: 12px; background: #00d4ff; color: #1a1a2e; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; }
+        .gec { color: #ff4444; }
+        .normal { color: #00ff00; }
+        .bos { color: #555; text-align: center; padding: 30px; }
+    </style>
+</head>
+<body>
+
+<h1>📊 Yönetici Paneli</h1>
+
+<div class="sekmeler">
+    <div class="sekme aktif" onclick="sekmeAc('icerdekiler', this)">👥 İçeridekiler</div>
+    <div class="sekme" onclick="sekmeAc('rapor', this)">📋 Günlük Rapor</div>
+    <div class="sekme" onclick="sekmeAc('personelekle', this)">➕ Personel Ekle</div>
+    <div class="sekme sekme-cikis" onclick="window.location.href='/index.html'">🚪 Çıkış</div>
+</div>
+
+<div class="istatistik" id="istatistik">
+    <div class="istat-kutu"><div class="istat-sayi">-</div><div class="istat-label">İçeride</div></div>
+    <div class="istat-kutu"><div class="istat-sayi">-</div><div class="istat-label">Bugün Gelen</div></div>
+    <div class="istat-kutu"><div class="istat-sayi" style="color:#ff4444">-</div><div class="istat-label">Geç Kalan</div></div>
+    <div class="istat-kutu"><div class="istat-sayi" style="color:#ffaa00">-</div><div class="istat-label">Gelmeyen</div></div>
+</div>
+
+<div id="iceridekilerpanel" class="panel">
+    <div id="icerdekilerListesi"><div class="bos">Yükleniyor...</div></div>
+</div>
+
+<div id="raporpanel" class="panel" style="display:none">
+    <div id="raporListesi"><div class="bos">Yükleniyor...</div></div>
+</div>
+
+<div id="personeleklepanel" class="panel" style="display:none">
+    <div class="form-alani">
+        <input type="text" id="yeniAd" placeholder="Ad Soyad" />
+        <input type="text" id="yeniSicil" placeholder="Sicil No" />
+        <input type="time" id="yeniMesai" value="09:00" />
+        <button class="btn-ekle" onclick="personelEkle()">Personel Ekle</button>
+        <div id="eklemeMesaj"></div>
+    </div>
+</div>
+
+<script>
+    const API = 'http://localhost:8080';
+    const SIFRE = 'admin123';
+
+    function sekmeAc(sekme, el) {
+        document.querySelectorAll('.sekme').forEach(s => s.classList.remove('aktif'));
+        el.classList.add('aktif');
+        ['iceridekilerpanel', 'raporpanel', 'personeleklepanel'].forEach(id => {
+            const panel = document.getElementById(id);
+            if (panel) panel.style.display = 'none';
+        });
+        const aktifPanel = document.getElementById(sekme + 'panel');
+        if (aktifPanel) aktifPanel.style.display = 'block';
+        if (sekme === 'icerdekiler') yukleIcerdekiler();
+        if (sekme === 'rapor') yukleRapor();
+    }
+
+    async function yukleIcerdekiler() {
+        const res = await fetch(`${API}/yonetici/icerdekiler?sifre=${SIFRE}`);
+        const data = await res.json();
+
+        document.getElementById('istatistik').innerHTML = `
+            <div class="istat-kutu"><div class="istat-sayi">${data.length}</div><div class="istat-label">İçeride</div></div>
+            <div class="istat-kutu"><div class="istat-sayi">-</div><div class="istat-label">Bugün Gelen</div></div>
+            <div class="istat-kutu"><div class="istat-sayi" style="color:#ff4444">-</div><div class="istat-label">Geç Kalan</div></div>
+            <div class="istat-kutu"><div class="istat-sayi" style="color:#ffaa00">-</div><div class="istat-label">Gelmeyen</div></div>
+        `;
+
+        const el = document.getElementById('icerdekilerListesi');
+        if (data.length === 0) {
+            el.innerHTML = '<div class="bos">İçeride kimse yok</div>';
+            return;
+        }
+        el.innerHTML = data.map(p => `
+            <div class="satir">
+                <span>👤 <b>${p.ad}</b></span>
+                <span style="color:#aaa">Sicil: ${p.sicilNo}</span>
+                <span style="color:#aaa">Giriş: ${new Date(p.girisSaati).toLocaleTimeString('tr-TR')}</span>
+                <span class="badge badge-icerde">İÇERİDE</span>
+            </div>`).join('');
+    }
+
+    async function yukleRapor() {
+        const res = await fetch(`${API}/yonetici/rapor?sifre=${SIFRE}`);
+        const data = await res.json();
+
+        const gelenler = data.filter(p => p.ilkGiris).length;
+        const gecKalanlar = data.filter(p => p.gecKaldi).length;
+        const gelmeyenler = data.filter(p => !p.ilkGiris).length;
+        const icerde = data.filter(p => p.ilkGiris && !p.sonCikis).length;
+
+        document.getElementById('istatistik').innerHTML = `
+            <div class="istat-kutu"><div class="istat-sayi">${icerde}</div><div class="istat-label">İçeride</div></div>
+            <div class="istat-kutu"><div class="istat-sayi">${gelenler}</div><div class="istat-label">Bugün Gelen</div></div>
+            <div class="istat-kutu"><div class="istat-sayi" style="color:#ff4444">${gecKalanlar}</div><div class="istat-label">Geç Kalan</div></div>
+            <div class="istat-kutu"><div class="istat-sayi" style="color:#ffaa00">${gelmeyenler}</div><div class="istat-label">Gelmeyen</div></div>
+        `;
+
+        const el = document.getElementById('raporListesi');
+        el.innerHTML = data.map(p => `
+            <div class="satir">
+                <span>👤 <b>${p.ad}</b></span>
+                <span style="color:#aaa">${p.ilkGiris ? '🕐 ' + new Date(p.ilkGiris).toLocaleTimeString('tr-TR') : 'Gelmedi'}</span>
+                <span style="color:#aaa">${p.sonCikis ? '🚪 ' + new Date(p.sonCikis).toLocaleTimeString('tr-TR') : '-'}</span>
+                <span class="${p.gecKaldi ? 'gec' : 'normal'}">${p.toplamSaat > 0 ? p.toplamSaat + ' saat' : '-'}</span>
+                ${!p.ilkGiris ? '<span class="badge badge-gelmedi">GELMEDİ</span>' : p.gecKaldi ? '<span class="badge badge-gec">GEÇ KALDI</span>' : '<span class="badge badge-normal">NORMAL</span>'}
+            </div>`).join('');
+    }
+
+    async function personelEkle() {
+        const ad = document.getElementById('yeniAd').value.trim();
+        const sicilNo = document.getElementById('yeniSicil').value.trim();
+        const mesai = document.getElementById('yeniMesai').value;
+
+        if (!ad || !sicilNo) {
+            document.getElementById('eklemeMesaj').innerHTML = '<span style="color:red">Ad ve sicil no zorunlu!</span>';
+            return;
+        }
+
+        const res = await fetch(`${API}/personel`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ad, sicilNo, mesaiBaslangic: mesai + ':00' })
+        });
+
+        if (res.ok) {
+            document.getElementById('eklemeMesaj').innerHTML = '<span style="color:#00ff00">✅ Personel eklendi!</span>';
+            document.getElementById('yeniAd').value = '';
+            document.getElementById('yeniSicil').value = '';
+        } else {
+            document.getElementById('eklemeMesaj').innerHTML = '<span style="color:red">❌ Hata oluştu!</span>';
+        }
+    }
+
+    yukleIcerdekiler();
+    setInterval(yukleIcerdekiler, 10000);
+</script>
+</body>
+</html>
