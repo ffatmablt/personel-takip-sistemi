@@ -12,6 +12,7 @@ Bu projeyi iş arayış sürecimde tamamen sıfırdan, tek başıma geliştirdim
 - Sicil numarası girip A veya B kapısından kart okutabiliyorsunuz
 - Son geçişler anlık olarak güncelleniyor (5 saniyede bir)
 - Yeşil = giriş, kırmızı = çıkış
+<img width="991" height="767" alt="image" src="https://github.com/user-attachments/assets/09f59858-b310-4a60-b7c5-7e1b0e588244" />
 
 **Patron Paneli (patron.html — şifreli)**
 - Şu an içeride kimler var, saat kaçta girdiler
@@ -19,7 +20,6 @@ Bu projeyi iş arayış sürecimde tamamen sıfırdan, tek başıma geliştirdim
 - Kim geç kaldı (mesai saatinden 5 dakika sonra gelen)
 - Kim hiç gelmedi
 - Yeni personel ekleme
-
 
 **Kapı Mantığı**
 - A → B → A → B = ✅ Normal akış
