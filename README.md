@@ -12,7 +12,8 @@ Bu projeyi iş arayış sürecimde tamamen sıfırdan, tek başıma geliştirdim
 - Sicil numarası girip A veya B kapısından kart okutabiliyorsunuz
 - Son geçişler anlık olarak güncelleniyor (5 saniyede bir)
 - Yeşil = giriş, kırmızı = çıkış
-<img width="991" height="767" alt="image" src="https://github.com/user-attachments/assets/09f59858-b310-4a60-b7c5-7e1b0e588244" />
+<img width="200" height="200" alt="image" src="https://github.com/user-attachments/assets/f4116a79-e195-4a38-b6ac-a93356934c62" />
+
 
 **Patron Paneli (patron.html — şifreli)**
 - Şu an içeride kimler var, saat kaçta girdiler
@@ -20,6 +21,9 @@ Bu projeyi iş arayış sürecimde tamamen sıfırdan, tek başıma geliştirdim
 - Kim geç kaldı (mesai saatinden 5 dakika sonra gelen)
 - Kim hiç gelmedi
 - Yeni personel ekleme
+<img width="200" height="200" alt="image" src="https://github.com/user-attachments/assets/60ad7827-24cc-4976-8261-322d2b7d48e1" />
+<img width="200" height="200" alt="image" src="https://github.com/user-attachments/assets/a476e35f-9b7a-4113-8f69-3ee6affa6b19" />
+<img width="200" height="200" alt="image" src="https://github.com/user-attachments/assets/93d86cd7-8629-4f44-ad6d-eceac9ce96cf" />
 
 **Kapı Mantığı**
 - A → B → A → B = ✅ Normal akış
@@ -70,7 +74,8 @@ Son 10 geçişi listeler. Personel ekranında gösterilir.
 **GET /yonetici/rapor**
 Şifreli. Günlük raporu döner: ilk giriş saati, son çıkış saati, toplam çalışma süresi, geç kalma durumu.
 
----
+<img width="200" height="200" alt="image" src="https://github.com/user-attachments/assets/87f30f68-26cf-4a5c-a03c-defecc9d4420" />
+
 
 ## ⚙️ Nasıl Çalıştırılır?
 
